@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hipper Adventskalender</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      font-family: 'Inter', sans-serif;
+      color: white;
+      overflow-x: hidden;
+    }
+    header {
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 0 0 20px #ff2d95;
+    }
+    #snow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .calendar {
+      position: relative;
+      z-index: 3;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    .door {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 20px 0;
+      text-align: center;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 1.3rem;
+      backdrop-filter: blur(4px);
+    }
+    .door:hover {
+      background: rgba(255,255,255,0.18);
+      box-shadow: 0 0 15px #ff2d95;
+      transform: scale(1.05);
+    }
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .modal-content {
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 0 20px #ff2d95;
+    }
+    button.close-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #ff2d95;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    canvas { pointer-events:none; }
+  </style>
+</head>
+<body>
+
+<header>✨ Hipster Adventskalender 2024 ✨</header>
+
+<canvas id="snow"></canvas>
+
+<div class="calendar" id="calendar"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-content" id="modalContent"></div>
+</div>
+
+<script>
+  const calendar = document.getElementById('calendar');
+  const modal = document.getElementById('modal');
+  const modalContent = document.getElementById('modalContent');
+
+  const messages = [
+    "🎄 Du bist wundervoll – vergiss das nie!",
+    "✨ Heute ist ein guter Tag für Glühwein!",
+    "💖 Mach jemandem ein Kompliment – jetzt sofort.",
+    "🎁 Eine kleine Pause tut dir gut.",
+    "❄️ Atme tief durch. Wintermagie überall.",
+    "🌟 Lächel – steht dir gut.",
+    "🎶 Hör heute ein Lied, das du liebst.",
+    "🔥 Mach's dir gemütlich – Kerze an!",
+    "🧣 Warm einpacken! Die Welt braucht dich warm.",
+    "🍪 Gönn dir heute was Süßes.",
+    "🌙 Sternenhimmel nicht vergessen.",
+    "🤍 Heute ist dein Tag.",
+    "🎄 Fast Halbzeit! Weiter strahlen.",
+    "💕 Jemand denkt an dich.",
+    "✨ Etwas Schönes wartet auf dich.",
+    "🎁 Du bist ein Geschenk für andere.",
+    "🌲 Ein kleiner Spaziergang? Tut gut.",
+    "☕ Wärm dich mit etwas Gutem.",
+    "❄️ Sei sanft zu dir selbst.",
+    "💫 Du hast so viel geschafft.",
+    "🎶 Tanz in deiner Küche.",
+    "🌟 Heute wird schön.",
+    "🔥 Glaube an deine Energie.",
+    "🎅 Frohe Weihnachten, Soulmate!"
+  ];
+
+  // Create doors
+  for (let i = 1; i <= 24; i++) {
+    const door = document.createElement('div');
+    door.className = 'door';
+    door.textContent = i;
+    door.onclick = () => openDoor(i);
+    calendar.appendChild(door);
+  }
+
+  function openDoor(i) {
+    modal.style.display = 'flex';
+    modalContent.innerHTML = `
+      <h2>Türchen ${i}</h2>
+      <p>${messages[i-1]}</p>
+      <button class="close-btn" onclick="closeModal()">Schließen</button>
+    `;
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+  }
+
+  // Snow animation
+  const canvas = document.getElementById('snow');
+  const ctx = canvas.getContext('2d');
+  let w, h;
+  let flakes = [];
+
+  function init() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    flakes = [];
+    for (let i = 0; i < 120; i++) {
+      flakes.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 3 + 1,
+        d: Math.random() + 1
+      });
+    }
+  }
+
+  function drawFlakes() {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    for (let f of flakes) {
+      ctx.moveTo(f.x, f.y);
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    moveFlakes();
+  }
+
+  let angle = 0;
+  function moveFlakes() {
+    angle += 0.01;
+    for (let f of flakes) {
+      f.y += Math.pow(f.d, 2) + 1;
+      f.x += Math.sin(angle) * 0.5;
+      if (f.y > h) {
+        f.y = 0;
+        f.x = Math.random() * w;
+      }
+    }
+  }
+
+  init();
+  setInterval(drawFlakes, 25);
+  window.onresize = init;
+</script>
+
+</body>
+</html>
